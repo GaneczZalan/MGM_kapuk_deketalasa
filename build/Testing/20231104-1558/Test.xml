@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20231104-1558-Experimental"
+	Name="ZacsaNotebookja"
+	Generator="ctest-3.16.3"
+	CompilerName="/usr/bin/g++"
+	CompilerVersion="9.4.0"
+	OSName="Linux"
+	Hostname="ZacsaNotebookja"
+	OSRelease="5.15.90.1-microsoft-standard-WSL2"
+	OSVersion="#1 SMP Fri Jan 27 02:56:13 UTC 2023"
+	OSPlatform="x86_64"
+	Is64Bits="1"
+	VendorString="GenuineIntel"
+	VendorID="Intel Corporation"
+	FamilyID="6"
+	ModelID="158"
+	ProcessorCacheSize="12288"
+	NumberOfLogicalCPU="12"
+	NumberOfPhysicalCPU="6"
+	TotalVirtualMemory="2048"
+	TotalPhysicalMemory="7883"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="2592.01"
+	>
+	<Testing>
+		<StartDateTime>Nov 04 16:58 CET</StartDateTime>
+		<StartTestTime>1699113531</StartTestTime>
+		<TestList/>
+		<EndDateTime>Nov 04 16:58 CET</EndDateTime>
+		<EndTestTime>1699113531</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>
