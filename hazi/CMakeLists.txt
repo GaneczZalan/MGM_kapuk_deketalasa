@@ -137,6 +137,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(test_scan_hazi src/scan_node.cpp)
+add_executable(test_control_hazi src/contor_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -149,10 +150,14 @@ add_executable(test_scan_hazi src/scan_node.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(test_scan_hazi
+ target_link_libraries(test_scan_hazi 
    ${catkin_LIBRARIES}
    ${PCL_LIBRARIES}
  )
+ target_link_libraries(test_control_hazi 
+ ${catkin_LIBRARIES}
+ ${PCL_LIBRARIES}
+)
 
 #############
 ## Install ##
