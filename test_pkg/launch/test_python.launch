@@ -1,7 +1,0 @@
-
-<launch>
-
-	<node pkg="test_pkg" type="test_node1.py" name="x" output="screen"/>
-	<node pkg="test_pkg" type="test_node2.py" name="x2"/>
-	<node pkg="test_pkg" type="test_node3.py" name="x3"/>
-</launch>
