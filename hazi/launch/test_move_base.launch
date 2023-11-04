@@ -31,18 +31,22 @@
     <arg name="debug" value="false"/>
   </include>
 
-<!-- Robot spawn -->
-  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"  args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
-  
-<!-- rviz -->
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_file)"/>
+<launch>
+  <!-- Robot spawn -->
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
 
-<!-- Map server -->
-  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+  <!-- RViz -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_file)" />
 
-<!-- move_base -->
+  <!-- Map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)" />
+
+  <!-- Move base -->
   <include file="$(find turtlebot3_navigation)/launch/move_base.launch">
     <arg name="model" value="$(arg model)" />
   </include>
+
+  <!-- Teleoperation with turtlebot3_teleop -->
+  <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch" />
 
 </launch>
