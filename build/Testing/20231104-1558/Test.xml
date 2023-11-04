@@ -6,7 +6,7 @@
 	CompilerName="/usr/bin/g++"
 	CompilerVersion="9.4.0"
 	OSName="Linux"
-	Hostname="ZacsaNotebookja"
+	Hostname="DESKTOP-INR4EEN"
 	OSRelease="5.15.90.1-microsoft-standard-WSL2"
 	OSVersion="#1 SMP Fri Jan 27 02:56:13 UTC 2023"
 	OSPlatform="x86_64"
@@ -14,21 +14,21 @@
 	VendorString="GenuineIntel"
 	VendorID="Intel Corporation"
 	FamilyID="6"
-	ModelID="158"
-	ProcessorCacheSize="12288"
-	NumberOfLogicalCPU="12"
-	NumberOfPhysicalCPU="6"
-	TotalVirtualMemory="2048"
-	TotalPhysicalMemory="7883"
+	ModelID="94"
+	ProcessorCacheSize="6144"
+	NumberOfLogicalCPU="8"
+	NumberOfPhysicalCPU="4"
+	TotalVirtualMemory="1024"
+	TotalPhysicalMemory="3867"
 	LogicalProcessorsPerPhysical="2"
-	ProcessorClockFrequency="2592.01"
+	ProcessorClockFrequency="2592"
 	>
 	<Testing>
-		<StartDateTime>Nov 04 16:58 CET</StartDateTime>
-		<StartTestTime>1699113531</StartTestTime>
+		<StartDateTime>Nov 04 17:47 CET</StartDateTime>
+		<StartTestTime>1699116469</StartTestTime>
 		<TestList/>
-		<EndDateTime>Nov 04 16:58 CET</EndDateTime>
-		<EndTestTime>1699113531</EndTestTime>
+		<EndDateTime>Nov 04 17:47 CET</EndDateTime>
+		<EndTestTime>1699116469</EndTestTime>
 		<ElapsedMinutes>0</ElapsedMinutes>
 	</Testing>
 </Site>
