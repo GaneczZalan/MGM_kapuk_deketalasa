@@ -47,6 +47,5 @@
   </include>
 
   <!-- Teleoperation with turtlebot3_teleop -->
-  <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch" />
 
 </launch>
