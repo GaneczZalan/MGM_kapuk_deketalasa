@@ -30,7 +30,7 @@ int main(int argc, char **argv){
     while(ros::ok()){
 
         std_msgs::String msg;
-        msg.data = "hello";
+        msg.data = "zalanegykurva";
         pub.publish(msg);
 		ROS_INFO("Sending...");
 		ros::spinOnce();
