@@ -20,7 +20,7 @@
 struct scan2pcl{
 
     // sensor_msgs::PointCloud2 mapCloud;
-
+    //Csabi egy fasz
 
 	tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener tfListener;
