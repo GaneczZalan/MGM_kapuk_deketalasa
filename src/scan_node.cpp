@@ -23,7 +23,6 @@
 struct scan2pcl{
 
     sensor_msgs::PointCloud2 mapCloud;
-    //Csabi egy fasz
 
 	tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener tfListener;
@@ -35,9 +34,9 @@ struct scan2pcl{
     
     
     scan2pcl(ros::NodeHandle nh_):nh(nh_),tfListener(tfBuffer){
-        cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/cloud", 1);
-        scan_sub = nh.subscribe("/scan", 1, &scan2pcl::scan_callback, this);
-        marker_pub = nh.advertise<visualization_msgs::MarkerArray>("/cone_markers", 1);
+        cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("cloud", 1);
+        scan_sub = nh.subscribe("agent1/scan", 1, &scan2pcl::scan_callback, this);
+        marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cone_markers", 1);
 
     }
 
@@ -62,13 +61,13 @@ struct scan2pcl{
         
         pcl::PointCloud<pcl::PointXYZ> mapCloud;
         // Get the transformation from the laser to the map
-        if (tfBuffer.canTransform("base_footprint",
+        if (tfBuffer.canTransform("map",
 							scan_in->header.frame_id,
 							scan_in->header.stamp,
 							ros::Duration(0.1)))
 		{
 			// Getting the transformation
-			geometry_msgs::TransformStamped trans_base2map = tfBuffer.lookupTransform("base_footprint",
+			geometry_msgs::TransformStamped trans_base2map = tfBuffer.lookupTransform("map",
 														scan_in->header.frame_id,
 							                            scan_in->header.stamp);
             
@@ -79,7 +78,7 @@ struct scan2pcl{
 
         sensor_msgs::PointCloud2 temp;
         pcl::toROSMsg(mapCloud,temp);
-        temp.header.frame_id = "base_footprint";
+        temp.header.frame_id = "map";
         
         // publish point cloud
         cloud_pub.publish(mapCloud);
@@ -153,7 +152,7 @@ struct scan2pcl{
 };
 
 int main(int a, char** aa) {
-	ros::init(a, aa, "base_footprint");
+	ros::init(a, aa, "map");
 	ros::NodeHandle n;
 
     scan2pcl scan_converter(n);
