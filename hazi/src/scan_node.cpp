@@ -16,6 +16,9 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/project_inliers.h>
 
+#include <visualization_msgs/MarkerArray.h>
+
+
 
 struct scan2pcl{
 
@@ -28,11 +31,13 @@ struct scan2pcl{
     ros::Subscriber scan_sub;
     ros::Publisher cloud_pub;
     ros::NodeHandle nh;
+    ros::Publisher marker_pub;
     
     
     scan2pcl(ros::NodeHandle nh_):nh(nh_),tfListener(tfBuffer){
         cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/cloud", 1);
-        scan_sub = nh.subscribe("/agent1/scan", 1, &scan2pcl::scan_callback, this);
+        scan_sub = nh.subscribe("/scan", 1, &scan2pcl::scan_callback, this);
+        marker_pub = nh.advertise<visualization_msgs::MarkerArray>("/cone_markers", 1);
 
     }
 
@@ -52,6 +57,7 @@ struct scan2pcl{
             localCloud.points.push_back(newPoint);
         }
 
+        // detectCones(localCloud);
 
         
         pcl::PointCloud<pcl::PointXYZ> mapCloud;
@@ -109,6 +115,37 @@ struct scan2pcl{
 
         // For more accurate cone detection, you may want to use more sophisticated algorithms
         // and consider factors like cone size, orientation, and filtering noise.
+
+        // Publish markers for the detected cones
+        visualization_msgs::MarkerArray marker_array;
+        visualization_msgs::Marker cone_marker;
+        cone_marker.header.frame_id = "map"; // Adjust the frame_id if needed
+        cone_marker.header.stamp = ros::Time::now();
+        cone_marker.ns = "cones";
+        cone_marker.action = visualization_msgs::Marker::ADD;
+        cone_marker.pose.orientation.w = 1.0;
+        cone_marker.id = 0;
+        cone_marker.type = visualization_msgs::Marker::SPHERE;
+        cone_marker.scale.x = 0.2; // Adjust the scale based on your cone size
+        cone_marker.scale.y = 0.2;
+        cone_marker.scale.z = 0.2;
+        cone_marker.color.r = 1.0;
+        cone_marker.color.g = 0.0;
+        cone_marker.color.b = 0.0;
+        cone_marker.color.a = 1.0;
+
+        for (size_t i = 0; i < inliers->indices.size(); ++i) {
+            int index = inliers->indices[i];
+            geometry_msgs::Point cone_point;
+            cone_point.x = cloud.points[index].x;
+            cone_point.y = cloud.points[index].y;
+            cone_point.z = cloud.points[index].z;
+            cone_marker.points.push_back(cone_point);
+            marker_array.markers.push_back(cone_marker);
+        }
+
+        // Publish markers
+        marker_pub.publish(marker_array);
     }
 
     

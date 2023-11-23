@@ -2,26 +2,9 @@
 
 <launch>
 	
-	<arg name="agent" default="gokart"/>
-	<arg name="rviz_file" default="$(find test_pkg3)/rviz/test.rviz"/>
-	
 	<param name="/use_sim_time" value="true"/>
 
 	<param name="robot_description" command="$(find xacro)/xacro $(find hamster_vehicle_description)/urdf/hamster.urdf.xacro"/>
-			
-	<node name="test_odom_path" pkg="test_pkg2" type="odom_path_node">
-		<param name="path_topic_name" 		value="/path/raw" />
-		<param name="odom_topic_name" 		value="/agent1/odom/raw" />
-		<param name="max_size" 		value="500" />
-	</node>
-
-	<node name="test_odom_path2" pkg="test_pkg2" type="odom_path_node">
-		<param name="path_topic_name" 		value="/path/ground_truth" />
-		<param name="odom_topic_name" 		value="/agent1/odom/ground_truth" />
-		<param name="max_size" 		value="500" />
-	</node>
-	
-
 	<node name="test_scan_hazi" pkg="hazi" type="test_scan_hazi" output="screen"/>
 	
 
@@ -43,11 +26,10 @@
 
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
-  <include file="$(find turtlebot3_slam)/launch/turtlebot3_slam.launch"/>
   <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch"/>
 
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"  args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
 
-  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find hazi) /hazi/rviz/test.rviz" output="screen"/>
 
 </launch>
