@@ -62,13 +62,13 @@ struct scan2pcl{
         
         pcl::PointCloud<pcl::PointXYZ> mapCloud;
         // Get the transformation from the laser to the map
-        if (tfBuffer.canTransform("map",
+        if (tfBuffer.canTransform("base_footprint",
 							scan_in->header.frame_id,
 							scan_in->header.stamp,
 							ros::Duration(0.1)))
 		{
 			// Getting the transformation
-			geometry_msgs::TransformStamped trans_base2map = tfBuffer.lookupTransform("map",
+			geometry_msgs::TransformStamped trans_base2map = tfBuffer.lookupTransform("base_footprint",
 														scan_in->header.frame_id,
 							                            scan_in->header.stamp);
             
@@ -79,7 +79,7 @@ struct scan2pcl{
 
         sensor_msgs::PointCloud2 temp;
         pcl::toROSMsg(mapCloud,temp);
-        temp.header.frame_id = "map";
+        temp.header.frame_id = "base_footprint";
         
         // publish point cloud
         cloud_pub.publish(mapCloud);
@@ -153,7 +153,7 @@ struct scan2pcl{
 };
 
 int main(int a, char** aa) {
-	ros::init(a, aa, "map");
+	ros::init(a, aa, "base_footprint");
 	ros::NodeHandle n;
 
     scan2pcl scan_converter(n);
