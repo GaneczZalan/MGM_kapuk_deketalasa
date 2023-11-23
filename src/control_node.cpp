@@ -48,7 +48,6 @@ int main(int a, char** aa) {
         // Spin once to trigger the callbacks
         ros::spinOnce();
 
-        ROS_INFO("asdasdasdsadsaasdasda");
         
     }
 
