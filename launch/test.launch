@@ -1,11 +1,23 @@
 <?xml version="1.0"?>
 
 <launch>
-	
+
+  <arg name="rviz_file" default="$(find hazi)/rviz/test.rviz"/>
+  <arg name="map_file" default="$(find hazi)/map/map.yaml"/>
+
 	<param name="/use_sim_time" value="true"/>
 
     <param name="robot_description" command="$(find xacro)/xacro $(find hamster_vehicle_description)/urdf/hamster.urdf.xacro"/>
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+    <param name="publish_frequency" type="double" value="50.0" />
+  </node>
   
+    <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen"/>
+
+  <node name="transform_map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0.0 0.0 0.0 0.0 0.0 0.0 map odom"/>
+
+
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
   <arg name="x_pos" default="-2.0"/>
   <arg name="y_pos" default="-0.5"/>
@@ -22,17 +34,23 @@
     <arg name="debug" value="false"/>
   </include>
 
+
+
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
-  <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch"/>
 
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"  args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
+
+<!-- RViz -->
+ <node name="rviz" pkg="rviz" type="rviz" args="-d $(find hazi) /hazi/rviz/test.rviz" output="screen"/>
+
+  <!-- Map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)" />
 
   
   <node name="scan_node" pkg="hazi" type="test_scan_hazi"/>
   <node name="control_node" pkg="hazi" type="test_control_hazi"/>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find hazi) /hazi/rviz/test.rviz" output="screen"/>
 
 
 </launch>

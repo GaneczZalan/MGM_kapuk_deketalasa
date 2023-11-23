@@ -35,7 +35,7 @@ struct scan2pcl{
     
     scan2pcl(ros::NodeHandle nh_):nh(nh_),tfListener(tfBuffer){
         cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("cloud", 1);
-        scan_sub = nh.subscribe("agent1/scan", 1, &scan2pcl::scan_callback, this);
+        scan_sub = nh.subscribe("scan", 1, &scan2pcl::scan_callback, this);
         marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cone_markers", 1);
 
     }
