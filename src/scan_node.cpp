@@ -92,7 +92,8 @@ struct scan2pcl{
         seg.setOptimizeCoefficients(true);
         seg.setModelType(pcl::SACMODEL_CIRCLE3D);
         seg.setMethodType(pcl::SAC_RANSAC);
-        seg.setDistanceThreshold(0.2);  // Adjust this threshold based on your LiDAR data and cone size.
+        seg.setDistanceThreshold(2);
+        seg.setRadiusLimits(0.05,0.15);  // Adjust this threshold based on your LiDAR data and cone size.
 
         seg.setInputCloud(cloud.makeShared());
         seg.segment(*inliers, *coefficients);
