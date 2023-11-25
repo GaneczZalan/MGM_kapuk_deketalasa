@@ -16,6 +16,35 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/project_inliers.h>
+#include "turtlesim/Pose.h"
+
+class turtle_bot_control 
+{
+
+    public:
+        turtle_bot_control(): nh("~")
+        {
+            
+        }
+
+    private:
+        ros::NodeHandle nh;
+        ros::Publisher cmd_vel_pub;
+        ros::Subscriber pose_sub;
+
+        double current_x;
+        double current_y;
+
+        double goal_x;
+        double goal_y
+}
+
+
+
+
+
+
+
 
 int main(int a, char** aa) {
 
