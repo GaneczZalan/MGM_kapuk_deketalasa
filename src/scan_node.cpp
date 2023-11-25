@@ -56,7 +56,7 @@ struct scan2pcl{
             localCloud.points.push_back(newPoint);
         }
 
-        // detectCones(localCloud);
+         detectCones(localCloud);
 
         
         pcl::PointCloud<pcl::PointXYZ> mapCloud;
