@@ -31,12 +31,14 @@ struct scan2pcl{
     ros::Publisher cloud_pub;
     ros::NodeHandle nh;
     ros::Publisher marker_pub;
+    ros::Publisher filtered_cloud_pub;
     
     
     scan2pcl(ros::NodeHandle nh_):nh(nh_),tfListener(tfBuffer){
         cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("cloud", 1);
         scan_sub = nh.subscribe("scan", 1, &scan2pcl::scan_callback, this);
         marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cone_markers", 1);
+        filtered_cloud_pub=nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("filtered_cloud",1);
 
     }
 
@@ -109,6 +111,10 @@ struct scan2pcl{
         extract.setInputCloud(cloud.makeShared());
         extract.setIndices(inliers);
         extract.filter(coneCloud);
+        filtered_cloud_pub.publish(coneCloud);
+        
+        
+
         
         // Now 'coneCloud' contains the points representing the detected cones.
         // You can further process and analyze these points to identify cones.
