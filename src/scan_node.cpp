@@ -63,13 +63,13 @@ struct scan2pcl{
         // Get the transformation from the laser to the map
         if (tfBuffer.canTransform("map",
 							scan_in->header.frame_id,
-							scan_in->header.stamp,
+							ros::Time::now(),
 							ros::Duration(0.1)))
 		{
 			// Getting the transformation
 			geometry_msgs::TransformStamped trans_base2map = tfBuffer.lookupTransform("map",
 														scan_in->header.frame_id,
-							                            scan_in->header.stamp);
+							                            ros::Time::now());
             
 
             // Transform the points to the map frame
