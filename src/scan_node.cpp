@@ -58,20 +58,20 @@ struct scan2pcl{
             localCloud.points.push_back(newPoint);
         }
 
-         detectCones(localCloud);
+         
 
         
         pcl::PointCloud<pcl::PointXYZ> mapCloud;
         // Get the transformation from the laser to the map
         if (tfBuffer.canTransform("map",
 							scan_in->header.frame_id,
-							ros::Time::now(),
+							scan_in->header.stamp,
 							ros::Duration(0.1)))
 		{
 			// Getting the transformation
 			geometry_msgs::TransformStamped trans_base2map = tfBuffer.lookupTransform("map",
 														scan_in->header.frame_id,
-							                            ros::Time::now());
+							                            scan_in->header.stamp);
             
 
             // Transform the points to the map frame
@@ -82,6 +82,8 @@ struct scan2pcl{
         pcl::toROSMsg(mapCloud,temp);
         temp.header.frame_id = "map";
         
+        detectCones(mapCloud);
+
         // publish point cloud
         cloud_pub.publish(mapCloud);
     }
@@ -95,7 +97,7 @@ struct scan2pcl{
         seg.setModelType(pcl::SACMODEL_CIRCLE3D);
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setDistanceThreshold(2);
-        seg.setRadiusLimits(0.05,0.15);  // Adjust this threshold based on your LiDAR data and cone size.
+        //seg.setRadiusLimits(0.05,0.15);  // Adjust this threshold based on your LiDAR data and cone size.
 
         seg.setInputCloud(cloud.makeShared());
         seg.segment(*inliers, *coefficients);
