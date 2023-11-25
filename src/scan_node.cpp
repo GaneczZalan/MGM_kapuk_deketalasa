@@ -18,6 +18,8 @@
 
 #include <visualization_msgs/MarkerArray.h>
 
+#include <pcl/segmentation/extract_clusters.h>
+
 
 
 struct scan2pcl{
@@ -47,7 +49,7 @@ struct scan2pcl{
     {
         // Get the points from the scan message
         pcl::PointCloud<pcl::PointXYZ> localCloud;
-        for (int i=0; i<scan_in->ranges.size(); i += 5)
+        for (int i=0; i<scan_in->ranges.size(); i ++)
         {
             float angle = scan_in->angle_min + i*scan_in->angle_increment;
 
@@ -71,7 +73,7 @@ struct scan2pcl{
 			// Getting the transformation
 			geometry_msgs::TransformStamped trans_base2map = tfBuffer.lookupTransform("map",
 														scan_in->header.frame_id,
-							                            scan_in->header.stamp);
+							                           scan_in->header.stamp);
             
 
             // Transform the points to the map frame
@@ -82,10 +84,12 @@ struct scan2pcl{
         pcl::toROSMsg(mapCloud,temp);
         temp.header.frame_id = "map";
         
-        detectCones(mapCloud);
+        
 
         // publish point cloud
-        cloud_pub.publish(mapCloud);
+        cloud_pub.publish(temp);
+
+        detectCones(mapCloud);
     }
 
     void detectCones(const pcl::PointCloud<pcl::PointXYZ>& cloud)
@@ -94,10 +98,10 @@ struct scan2pcl{
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
         pcl::SACSegmentation<pcl::PointXYZ> seg;
         seg.setOptimizeCoefficients(true);
-        seg.setModelType(pcl::SACMODEL_CIRCLE3D);
+        seg.setModelType(pcl::SACMODEL_CIRCLE2D);
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setDistanceThreshold(2);
-        //seg.setRadiusLimits(0.05,0.15);  // Adjust this threshold based on your LiDAR data and cone size.
+        seg.setRadiusLimits(0.0,0.15);  // Adjust this threshold based on your LiDAR data and cone size.
 
         seg.setInputCloud(cloud.makeShared());
         seg.segment(*inliers, *coefficients);
@@ -113,7 +117,12 @@ struct scan2pcl{
         extract.setInputCloud(cloud.makeShared());
         extract.setIndices(inliers);
         extract.filter(coneCloud);
-        filtered_cloud_pub.publish(coneCloud);
+
+        sensor_msgs::PointCloud2 temp;
+        pcl::toROSMsg(coneCloud,temp);
+        temp.header.frame_id = "map";
+
+        filtered_cloud_pub.publish(temp);
         
         
 
@@ -127,7 +136,7 @@ struct scan2pcl{
         // Publish markers for the detected cones
         visualization_msgs::MarkerArray marker_array;
         visualization_msgs::Marker cone_marker;
-        cone_marker.header.frame_id = cloud.header.frame_id; // Adjust the frame_id if needed
+        cone_marker.header.frame_id = coneCloud.header.frame_id; // Adjust the frame_id if needed
         cone_marker.header.stamp = ros::Time::now();
         cone_marker.ns = "cones";
         cone_marker.action = visualization_msgs::Marker::ADD;
@@ -145,9 +154,9 @@ struct scan2pcl{
         for (size_t i = 0; i < inliers->indices.size(); ++i) {
             int index = inliers->indices[i];
             geometry_msgs::Point cone_point;
-            cone_point.x = cloud.points[index].x;
-            cone_point.y = cloud.points[index].y;
-            cone_point.z = cloud.points[index].z;
+            cone_point.x = coneCloud.points[index].x;
+            cone_point.y = coneCloud.points[index].y;
+            cone_point.z = coneCloud.points[index].z;
             cone_marker.points.push_back(cone_point);
             marker_array.markers.push_back(cone_marker);
         }

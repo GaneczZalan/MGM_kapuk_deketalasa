@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 
 <launch>
-
   <arg name="rviz_file" default="$(find hazi)/rviz/test.rviz"/>
   <arg name="map_file" default="$(find hazi)/map/map.yaml"/>
 
@@ -42,11 +41,9 @@
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"  args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
 
 <!-- RViz -->
- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find hazi) /hazi/rviz/test.rviz" output="screen"/>
-
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_file)"/>
   <!-- Map server -->
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)" />
-
   
   <node name="scan_node" pkg="hazi" type="test_scan_hazi"/>
   <node name="control_node" pkg="hazi" type="test_control_hazi"/>
