@@ -17,6 +17,9 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/project_inliers.h>
 #include "turtlesim/Pose.h"
+#include <nav_msgs/Odometry.h>
+#include <tf2/utils.h>
+#include <geometry_msgs/Quaternion.h>
 
 class turtle_bot_control 
 {
@@ -24,7 +27,33 @@ class turtle_bot_control
     public:
         turtle_bot_control(): nh("~")
         {
+            cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+            pose_sub = nh.subscribe("/pose", 1, &turtle_bot_control::turtle_pose_callback, this);
+
+            goal_x = -1.5;
+            goal_y = 1.5;
+
+            loop_rate = 10;
+            ros::Rate rate(loop_rate);
             
+            while (1)
+            {
+                double angle = atan2(goal_y - current_y, goal_x - current_x);
+                nav_msgs::Odometry odometry;
+                
+                
+                double yaw = tf2::getYaw(odometry.pose.pose.orientation);
+                if(abs(yaw-angle)>0.5)
+                {
+                    control_turtle(0.05, 0.2);
+                }
+                else control_turtle(0.05, 0);
+                
+
+                rate.sleep();
+
+                ros::spinOnce();
+            }
         }
 
     private:
@@ -36,8 +65,8 @@ class turtle_bot_control
         double current_y;
 
         double goal_x;
-        double goal_y;
-};
+        double goal_y
+}
 
 
 
@@ -56,7 +85,7 @@ int main(int a, char** aa) {
 
     ros::Rate loop_rate(10);
 
-    double steering_angle = 0.05;
+    double steering_angle = 0.2;
 
     while (ros::ok()) {
         // Create a Twist message
