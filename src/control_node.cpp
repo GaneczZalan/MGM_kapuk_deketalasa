@@ -21,7 +21,67 @@
 #include <tf2/utils.h>
 #include <geometry_msgs/Quaternion.h>
 
-class turtle_bot_control 
+#include "move_base_msgs/MoveBaseAction.h"
+#include "actionlib/client/simple_action_client.h"
+
+
+typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+
+int main(int argc, char** argv)
+{
+    // Initialize ROS
+    ros::init(argc, argv, "simple_navigation_goals");
+    
+    // Create a MoveBaseClient
+    MoveBaseClient ac("move_base", true);
+
+    // Wait for the action server to come up
+    while (!ac.waitForServer(ros::Duration(5.0)))
+    {
+        ROS_INFO("Waiting for the move_base action server to come up");
+    }
+
+    // Create a goal
+    move_base_msgs::MoveBaseGoal goal;
+    
+    // Set the frame ID and timestamp of the goal
+    goal.target_pose.header.frame_id = "map";
+    goal.target_pose.header.stamp = ros::Time::now();
+
+    // Set the goal position (adjust these coordinates)
+    goal.target_pose.pose.position.x = -1.5;
+    goal.target_pose.pose.position.y = 1.5;
+    goal.target_pose.pose.position.z = 0.0;
+
+    // Set the goal orientation (quaternion)
+    goal.target_pose.pose.orientation.x = 0.0;
+    goal.target_pose.pose.orientation.y = 0.0;
+    goal.target_pose.pose.orientation.z = 0.0;
+    goal.target_pose.pose.orientation.w = 1.0;
+
+    // Send the goal
+    ROS_INFO("Sending goal");
+    ac.sendGoal(goal);
+
+    // Wait for the result
+    ac.waitForResult();
+
+    if (ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+    {
+        ROS_INFO("Hooray, the robot reached the goal!");
+    }
+    else
+    {
+        ROS_INFO("The robot failed to reach the goal for some reason");
+    }
+
+    ros::spin();
+    return 0;
+}
+
+
+
+/*class turtle_bot_control 
 {
 
     public:
@@ -103,4 +163,4 @@ int main(int a, char** aa) {
     turtle_bot_control control;
 
     return 0;
-}
+}*/

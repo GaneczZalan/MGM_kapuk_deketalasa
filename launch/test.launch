@@ -4,6 +4,8 @@
   <arg name="rviz_file" default="$(find hazi)/rviz/test.rviz"/>
   <arg name="map_file" default="$(find hazi)/map/map.yaml"/>
 
+  <include file="$(find turtlebot3_navigation)/launch/move_base.launch" />
+
 	<param name="/use_sim_time" value="true"/>
 
     <param name="robot_description" command="$(find xacro)/xacro $(find hamster_vehicle_description)/urdf/hamster.urdf.xacro"/>
