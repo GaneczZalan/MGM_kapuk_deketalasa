@@ -35,11 +35,12 @@ pcl::PointCloud<pcl::PointXYZ> outputCloud;
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
         pcl::SACSegmentation<pcl::PointXYZ> seg;
         seg.setOptimizeCoefficients(true);
-        seg.setModelType(pcl::SACMODEL_CIRCLE2D);
+        seg.setMethodType(pcl::SAC_RANSAC); // 15 cm in meters
         seg.setMethodType(pcl::SAC_RANSAC);
-        const double cone_radius = 0.15;  // 15 cm in meters
-        seg.setDistanceThreshold(1000);  // Set threshold based on cone size
+        seg.setModelType(pcl::SACMODEL_CIRCLE3D);
+        seg.setDistanceThreshold(0.5);  // Adjust based on your scenario
         seg.setRadiusLimits(0.1, 0.2);  // Set minimum and maximum radius limits in meters
+        seg.setMaxIterations(1000);  // Adjust based on your scenario;  // Set minimum and maximum radius limits in meters
 
 
         seg.setInputCloud(outputCloud.makeShared());

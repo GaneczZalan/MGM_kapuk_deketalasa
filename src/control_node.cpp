@@ -45,9 +45,9 @@ class turtle_bot_control
                 double yaw = tf2::getYaw(odometry.pose.pose.orientation);
                 if(abs(yaw-angle)>0.5)
                 {
-                    control_turtle(0.05, 0.2);
+                    control_turtle(0, 0);
                 }
-                else control_turtle(0.05, 0);
+                else control_turtle(0, 0);
                 
 
                 rate.sleep();
