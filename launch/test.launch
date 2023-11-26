@@ -48,6 +48,8 @@
   <node name="scan_node" pkg="hazi" type="test_scan_hazi"/>
   <node name="control_node" pkg="hazi" type="test_control_hazi"/>
 
+  <node name="filter_node" pkg="hazi" type="test_filter_node"/>
+
 
 
 </launch>

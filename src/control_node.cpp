@@ -36,8 +36,8 @@ class turtle_bot_control
         double current_y;
 
         double goal_x;
-        double goal_y
-}
+        double goal_y;
+};
 
 
 
@@ -56,7 +56,7 @@ int main(int a, char** aa) {
 
     ros::Rate loop_rate(10);
 
-    double steering_angle = 0.2;
+    double steering_angle = 0.05;
 
     while (ros::ok()) {
         // Create a Twist message

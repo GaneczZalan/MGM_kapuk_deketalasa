@@ -35,12 +35,11 @@ struct scan2pcl{
     ros::Publisher marker_pub;
     ros::Publisher filtered_cloud_pub;
     
-    
     scan2pcl(ros::NodeHandle nh_):nh(nh_),tfListener(tfBuffer){
         cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("cloud", 1);
         scan_sub = nh.subscribe("scan", 1, &scan2pcl::scan_callback, this);
         marker_pub = nh.advertise<visualization_msgs::MarkerArray>("cone_markers", 1);
-        filtered_cloud_pub=nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("filtered_cloud",1);
+        
 
     }
 
@@ -89,85 +88,12 @@ struct scan2pcl{
         // publish point cloud
         cloud_pub.publish(temp);
 
-        detectCones(mapCloud);
     }
 
-    void detectCones(const pcl::PointCloud<pcl::PointXYZ>& cloud)
-    {
-        pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-        pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-        pcl::SACSegmentation<pcl::PointXYZ> seg;
-        seg.setOptimizeCoefficients(true);
-        seg.setModelType(pcl::SACMODEL_CIRCLE2D);
-        seg.setMethodType(pcl::SAC_RANSAC);
-        seg.setDistanceThreshold(2);
-        seg.setRadiusLimits(0.0,0.15);  // Adjust this threshold based on your LiDAR data and cone size.
-
-        seg.setInputCloud(cloud.makeShared());
-        seg.segment(*inliers, *coefficients);
-
-        if (inliers->indices.size() == 0)
-        {
-            ROS_INFO("No cone detected.");
-            return;
-        }
-
-        pcl::PointCloud<pcl::PointXYZ> coneCloud;
-        pcl::ExtractIndices<pcl::PointXYZ> extract;
-        extract.setInputCloud(cloud.makeShared());
-        extract.setIndices(inliers);
-        extract.filter(coneCloud);
-
-        sensor_msgs::PointCloud2 temp;
-        pcl::toROSMsg(coneCloud,temp);
-        temp.header.frame_id = "map";
-
-        filtered_cloud_pub.publish(temp);
-        
-        
-
-        
-        // Now 'coneCloud' contains the points representing the detected cones.
-        // You can further process and analyze these points to identify cones.
-
-        // For more accurate cone detection, you may want to use more sophisticated algorithms
-        // and consider factors like cone size, orientation, and filtering noise.
-
-        // Publish markers for the detected cones
-        visualization_msgs::MarkerArray marker_array;
-        visualization_msgs::Marker cone_marker;
-        cone_marker.header.frame_id = coneCloud.header.frame_id; // Adjust the frame_id if needed
-        cone_marker.header.stamp = ros::Time::now();
-        cone_marker.ns = "cones";
-        cone_marker.action = visualization_msgs::Marker::ADD;
-        cone_marker.pose.orientation.w = 1.0;
-        cone_marker.id = 0;
-        cone_marker.type = visualization_msgs::Marker::SPHERE;
-        cone_marker.scale.x = 0.2; // Adjust the scale based on your cone size
-        cone_marker.scale.y = 0.2;
-        cone_marker.scale.z = 0.2;
-        cone_marker.color.r = 1.0;
-        cone_marker.color.g = 0.0;
-        cone_marker.color.b = 0.0;
-        cone_marker.color.a = 1.0;
-
-        for (size_t i = 0; i < inliers->indices.size(); ++i) {
-            int index = inliers->indices[i];
-            geometry_msgs::Point cone_point;
-            cone_point.x = coneCloud.points[index].x;
-            cone_point.y = coneCloud.points[index].y;
-            cone_point.z = coneCloud.points[index].z;
-            cone_marker.points.push_back(cone_point);
-            marker_array.markers.push_back(cone_marker);
-        }
-
-        // Publish markers
-        marker_pub.publish(marker_array);
-    }
-
-    
-    
+     
 };
+
+
 
 int main(int a, char** aa) {
 	ros::init(a, aa, "map");
