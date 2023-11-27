@@ -31,16 +31,15 @@ pcl::PointCloud<pcl::PointXYZ> outputCloud;
  void detectCones(sensor_msgs::PointCloud2 inputCloud) 
  {
         pcl::fromROSMsg(inputCloud, outputCloud);
-        pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+        /*pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
         pcl::SACSegmentation<pcl::PointXYZ> seg;
         seg.setOptimizeCoefficients(true);
-        seg.setMethodType(pcl::SAC_RANSAC); // 15 cm in meters
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setModelType(pcl::SACMODEL_CIRCLE3D);
-        seg.setDistanceThreshold(0.5);  // Adjust based on your scenario
+        seg.setDistanceThreshold(4);  // Adjust based on your scenario
         seg.setRadiusLimits(0.1, 0.2);  // Set minimum and maximum radius limits in meters
-        seg.setMaxIterations(1000);  // Adjust based on your scenario;  // Set minimum and maximum radius limits in meters
+        seg.setMaxIterations(100000);  // Adjust based on your scenario;
 
 
         seg.setInputCloud(outputCloud.makeShared());
@@ -78,7 +77,7 @@ pcl::PointCloud<pcl::PointXYZ> outputCloud;
         cone_marker.color.r = 1.0;
         cone_marker.color.g = 0.0;
         cone_marker.color.b = 0.0;
-        cone_marker.color.a = 1.0;*/
+        cone_marker.color.a = 1.0;
 
         // Calculate the midpoint of the cone using the centroid of inlier points
         pcl::PointXYZ midpoint;
@@ -101,7 +100,7 @@ pcl::PointCloud<pcl::PointXYZ> outputCloud;
         cone_point.z = midpoint.z;
         //cone_marker.points.push_back(cone_point);
 
-
+        */
  }
 
 
@@ -111,12 +110,12 @@ int main(int a, char** aa)
     ros::NodeHandle n;
     ros::Subscriber cloud=n.subscribe("cloud",10,detectCones);
     ros::Publisher filtered_cloud_pub=n.advertise<pcl::PointCloud<pcl::PointXYZ>>("filtered_cloud",10);
-     sensor_msgs::PointCloud2 temp;
+     /*sensor_msgs::PointCloud2 temp;
         pcl::toROSMsg(outputCloud,temp);
-        temp.header.frame_id = "filter";
+        temp.header.frame_id = "filter";*/
 
         // publish point cloud
-        filtered_cloud_pub.publish(temp);
+        filtered_cloud_pub.publish(outputCloud);
     
 
     ros::spin();
