@@ -59,8 +59,6 @@ struct scan2pcl{
             localCloud.points.push_back(newPoint);
         }
 
-         
-
         
         pcl::PointCloud<pcl::PointXYZ> mapCloud;
         // Get the transformation from the laser to the map
