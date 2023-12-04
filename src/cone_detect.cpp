@@ -11,7 +11,7 @@
 ros::Publisher cone_center_pub;
 
 void cloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg) {
-    ROS_INFO("fasz");
+   
     // Convert sensor_msgs::PointCloud2 to PCL PointCloud
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::fromROSMsg(*cloud_msg, *cloud);
@@ -29,9 +29,9 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg) {
     // Apply Euclidean Cluster Extraction
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-    ec.setClusterTolerance(0.3);  // Adjust according to your point cloud characteristics
-    ec.setMinClusterSize(5);     // Adjust according to your point cloud characteristics
-    ec.setMaxClusterSize(1000);   // Adjust according to your point cloud characteristics
+    ec.setClusterTolerance(0.3);  
+    ec.setMinClusterSize(5);     
+    ec.setMaxClusterSize(1000);   
     ec.setSearchMethod(tree);
     ec.setInputCloud(cloud);
     ec.extract(cluster_indices);
@@ -54,10 +54,6 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg) {
         newPoint.x = x;
         newPoint.y = y;
         center_points.push_back(newPoint);
-
-        // Do something with the points in the cluster
-        // For example, print the size of each cluster
-        ROS_INFO("Cluster Size: %lu", cluster->size());
     }
 
     sensor_msgs::PointCloud2 temp;
@@ -71,7 +67,6 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "cluster_extraction");
     ros::NodeHandle nh("~");
 
-    // Subscribe to the PointCloud2 topic
     ros::Subscriber sub = nh.subscribe("/cloud", 1, cloudCallback);
     cone_center_pub = nh.advertise<sensor_msgs::PointCloud2>("/cone_center",1);
 
