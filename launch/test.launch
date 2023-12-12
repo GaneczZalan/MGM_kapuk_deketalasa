@@ -11,7 +11,7 @@
     <param name="robot_description" command="$(find xacro)/xacro $(find hamster_vehicle_description)/urdf/hamster.urdf.xacro"/>
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
-    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="publish_frequency" type="double" value="500.0" />
   </node>
   
     <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen"/>
@@ -20,8 +20,8 @@
 
 
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-  <arg name="x_pos" default="-2.0"/>
-  <arg name="y_pos" default="-0.5"/>
+  <arg name="x_pos" default="0.25"/>
+  <arg name="y_pos" default="0.0"/>
   <arg name="z_pos" default="0.0"/>
 
     

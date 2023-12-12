@@ -23,29 +23,101 @@
 
 #include "move_base_msgs/MoveBaseAction.h"
 #include "actionlib/client/simple_action_client.h"
+#include <visualization_msgs/Marker.h>
 
+move_base_msgs::MoveBaseGoal goal;
+typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+ros::Subscriber sub_points;
+ros::Subscriber odom_sub;
+void points_callback(const pcl::PointCloud<pcl::PointXYZ>& inputCloud);
+void NodeHandle(ros::NodeHandle nh);
+pcl::PointXYZ referencePoint;
+ros::Publisher marker_pub;
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
-int main(int argc, char** argv)
+void findHalfwayPoint(const pcl::PointCloud<pcl::PointXYZ>& inputCloud, Eigen::Vector3f& halfwayPoint)
 {
-    ros::init(argc, argv, "simple_navigation_goals");
-    
-    MoveBaseClient ac("move_base", true);
-
-    while (!ac.waitForServer(ros::Duration(5.0)))
+    // Check if the input cloud is empty
+    if (inputCloud.empty())
     {
-        ROS_INFO("Waiting for the move_base action server to come up");
+        std::cerr << "Input cloud is empty. Cannot find halfway point." << std::endl;
+        return;
     }
 
-    move_base_msgs::MoveBaseGoal goal;
+    // Initialize variables to store the indices of the two closest points
+    int index1 = -1;
+    int index2 = -1;
+    double minDistance1 = 0;
+    double minDistance2 = 0;
+
+    // Iterate through all points in the input cloud
+    for (size_t i = 0; i < inputCloud.size(); ++i)
+    {
+        pcl::PointXYZ temp_point;
+        temp_point.x=inputCloud[i].x;
+        temp_point.y=inputCloud[i].y;
+        temp_point.z=inputCloud[i].z;
+        // Calculate the Euclidean distance between the current point and the reference point
+        double distance = pcl::euclideanDistance(temp_point, referencePoint);
+
+        // Update the indices of the two closest points
+        if (distance < minDistance1)
+        {
+            minDistance2 = minDistance1;
+            index2 = index1;
+
+            minDistance1 = distance;
+            index1 = static_cast<int>(i);
+        }
+        else if (distance < minDistance2)
+        {
+            minDistance2 = distance;
+            index2 = static_cast<int>(i);
+        }
+    }
+
+    // Check if two closest points were found
+    if (index1 == -1 && index2 == -1)
+    {
+        ROS_INFO("nincs kozeppont");
+        return;
+    }
+
+    // Calculate the halfway point between the two closest points
+    halfwayPoint = 0.5 * (inputCloud[index1].getVector3fMap() + inputCloud[index2].getVector3fMap());
+
+    visualization_msgs::Marker circle_marker;
+            circle_marker.header.frame_id = inputCloud.header.frame_id;
+            circle_marker.header.stamp = ros::Time::now();
+            circle_marker.ns = "circles";
+            circle_marker.action = visualization_msgs::Marker::ADD;
+            circle_marker.pose.orientation.w = 1.0;
+            circle_marker.type = visualization_msgs::Marker::SPHERE;
+            circle_marker.scale.x = 0.5;
+            circle_marker.scale.y = 0.5;
+            circle_marker.scale.z = 0.5;
+            circle_marker.color.r = 0.3;
+            circle_marker.color.g = 0.75;
+            circle_marker.color.b = 0.0;
+            circle_marker.color.a = 1.0;
+            circle_marker.pose.position.x = halfwayPoint[0];
+            circle_marker.pose.position.y = halfwayPoint[1];
+            circle_marker.pose.position.z = halfwayPoint[2];
+            marker_pub.publish(circle_marker);
+}
+
+void moveToHalfwayPoint(const Eigen::Vector3f& halfwayPoint)
+{
+    MoveBaseClient ac("move_base", true);
     
+    move_base_msgs::MoveBaseGoal goal;
     goal.target_pose.header.frame_id = "map";
     goal.target_pose.header.stamp = ros::Time::now();
 
-    goal.target_pose.pose.position.x = -1.5;
-    goal.target_pose.pose.position.y = 1.5;
-    goal.target_pose.pose.position.z = 0.0;
+    goal.target_pose.pose.position.x = halfwayPoint[0];
+    goal.target_pose.pose.position.y = halfwayPoint[1];
+    goal.target_pose.pose.position.z = 0;
 
     goal.target_pose.pose.orientation.x = 0.0;
     goal.target_pose.pose.orientation.y = 0.0;
@@ -65,6 +137,41 @@ int main(int argc, char** argv)
     {
         ROS_INFO("The robot failed to reach the goal for some reason");
     }
+}
+
+void odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
+{
+    // Extract the position information from the odometry message
+    double x = msg->pose.pose.position.x;
+    double y = msg->pose.pose.position.y;
+    double z = msg->pose.pose.position.z;
+
+    // Update the reference point
+    referencePoint.x = x;
+    referencePoint.y = y;
+    referencePoint.z = z;
+}
+
+void points_callback(const pcl::PointCloud<pcl::PointXYZ>& inputCloud)
+{
+    Eigen::Vector3f halfwayPoint;
+    findHalfwayPoint(inputCloud, halfwayPoint);
+    moveToHalfwayPoint(halfwayPoint);
+}
+
+void NodeHandle(ros::NodeHandle nh)
+{
+    ros::Subscriber sub_points = nh.subscribe("filtered_cloud", 1, points_callback);
+    ros::Subscriber odom_sub = nh.subscribe("odom", 1, odomCallback);
+    marker_pub=nh.advertise<visualization_msgs::Marker>("midpoint",1);
+}
+
+int main(int argc, char** argv)
+{
+    ros::init(argc, argv, "map");
+
+    ros::NodeHandle nh;
+    NodeHandle(nh);
 
     ros::spin();
     return 0;

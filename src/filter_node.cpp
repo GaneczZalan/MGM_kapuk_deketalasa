@@ -2,121 +2,121 @@
 #include <iostream>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl_ros/transforms.h>
-
-#include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2/convert.h>
-
-#include "sensor_msgs/LaserScan.h"
-#include "sensor_msgs/PointCloud2.h"
-#include <pcl/common/transforms.h>
-
-#include <pcl/filters/extract_indices.h>
 #include <pcl/segmentation/sac_segmentation.h>
-#include <pcl/filters/project_inliers.h>
-
+#include <pcl/filters/extract_indices.h>
+#include <pcl/common/centroid.h>
 #include <visualization_msgs/MarkerArray.h>
 
-#include <pcl/segmentation/extract_clusters.h>
+ros::Subscriber cloud_sub;
+ros::Publisher marker_pub;
+ros::Publisher filtered_cloud_pub;
 
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
-#include <pcl/segmentation/sac_segmentation.h>
-#include <pcl/segmentation/extract_clusters.h>
-#include <pcl_conversions/pcl_conversions.h>
+void detectCones(const sensor_msgs::PointCloud2ConstPtr& inputCloud)
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr outputCloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::fromROSMsg(*inputCloud, *outputCloud);
 
-pcl::PointCloud<pcl::PointXYZ> outputCloud;
+    pcl::SACSegmentation<pcl::PointXYZ> seg;
+    seg.setOptimizeCoefficients(true);
+    seg.setMethodType(pcl::SAC_RANSAC);
+    seg.setModelType(pcl::SACMODEL_CIRCLE2D);
+    seg.setDistanceThreshold(0.05);
+    seg.setMaxIterations(1000);
 
- void detectCones(sensor_msgs::PointCloud2 inputCloud) 
- {
-        pcl::fromROSMsg(inputCloud, outputCloud);
-        /*pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-        pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-        pcl::SACSegmentation<pcl::PointXYZ> seg;
-        seg.setOptimizeCoefficients(true);
-        seg.setMethodType(pcl::SAC_RANSAC);
-        seg.setModelType(pcl::SACMODEL_CIRCLE3D);
-        seg.setDistanceThreshold(4);  // Adjust based on your scenario
-        seg.setRadiusLimits(0.1, 0.2);  // Set minimum and maximum radius limits in meters
-        seg.setMaxIterations(100000);  // Adjust based on your scenario;
-
-
-        seg.setInputCloud(outputCloud.makeShared());
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> circles;
+    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+    
+    pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+    while (true)
+    {
+        seg.setInputCloud(outputCloud);
         seg.segment(*inliers, *coefficients);
 
-        if (inliers->indices.size() == 0) {
-            ROS_INFO("No cone detected.");
-            return;
+        if (inliers->indices.size() == 0)
+        {
+            break;
         }
+        else
+        {
+            pcl::PointCloud<pcl::PointXYZ>::Ptr circleCloud(new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::ExtractIndices<pcl::PointXYZ> extract;
+            extract.setInputCloud(outputCloud);
+            extract.setIndices(inliers);
+            extract.setNegative(false);
+            extract.filter(*circleCloud);
 
-        pcl::PointCloud<pcl::PointXYZ> coneCloud;
-        pcl::ExtractIndices<pcl::PointXYZ> extract;
-        extract.setInputCloud(outputCloud.makeShared());
-        extract.setIndices(inliers);
-        extract.filter(coneCloud);
+            Eigen::Vector4f center;
+            center[0] = coefficients->values[0];
+            center[1] = coefficients->values[1];
+            center[2] = 0;
 
-        // Now 'coneCloud' contains the points representing the detected cones.
-        // You can further process and analyze these points to identify cones.
+            // Now 'center' contains the middle point of the detected circle
 
-        // For more accurate cone detection, you may want to use more sophisticated algorithms
-        // and consider factors like cone size, orientation, and filtering noise.
+            circles.push_back(circleCloud);
 
-        // Publish markers for the detected cones
-        /*visualization_msgs::MarkerArray marker_array;
-        visualization_msgs::Marker cone_marker;
-        cone_marker.header.frame_id = outputCloud.header.frame_id; // Adjust the frame_id if needed
-        cone_marker.header.stamp = ros::Time::now();
-        cone_marker.ns = "cones";
-        cone_marker.action = visualization_msgs::Marker::ADD;
-        cone_marker.pose.orientation.w = 1.0;
-        cone_marker.type = visualization_msgs::Marker::SPHERE;
-        cone_marker.scale.x = 0.2; // Adjust the scale based on your cone size
-        cone_marker.scale.y = 0.2;
-        cone_marker.scale.z = 0.2;
-        cone_marker.color.r = 1.0;
-        cone_marker.color.g = 0.0;
-        cone_marker.color.b = 0.0;
-        cone_marker.color.a = 1.0;
-
-        // Calculate the midpoint of the cone using the centroid of inlier points
-        pcl::PointXYZ midpoint;
-        for (size_t i = 0; i < inliers->indices.size(); ++i) {
-            int index = inliers->indices[i];
-            midpoint.x += outputCloud.points[index].x;
-            midpoint.y += outputCloud.points[index].y;
-            midpoint.z += outputCloud.points[index].z;
+            extract.setNegative(true);
+            extract.filter(*outputCloud);
         }
+    }
+    pcl::PointCloud<pcl::PointXYZ> localCloud;
+    for (size_t i = 0; i < circles.size(); ++i)
+    {
+        Eigen::Vector4f centroid;
+        pcl::compute3DCentroid(*circles[i], centroid);
 
-        // Calculate the centroid
-        midpoint.x /= inliers->indices.size();
-        midpoint.y /= inliers->indices.size();
-        midpoint.z /= inliers->indices.size();
+        pcl::PointXYZ newPoint;
+        newPoint.x = centroid[0];
+        newPoint.y = centroid[1];
+        newPoint.z = 0;
 
-        // Add midpoint to the marker
-        geometry_msgs::Point cone_point;
-        cone_point.x = midpoint.x;
-        cone_point.y = midpoint.y;
-        cone_point.z = midpoint.z;
-        //cone_marker.points.push_back(cone_point);
+        localCloud.push_back(newPoint);
+    }
+    localCloud.header.frame_id=inputCloud->header.frame_id;
+    localCloud.header.seq=inputCloud->header.seq;
+    // Publish the vector of circle centers
 
-        */
- }
+    visualization_msgs::MarkerArray marker_array;
+    for (size_t i = 0; i < circles.size(); ++i)
+    {
 
+            visualization_msgs::Marker circle_marker;
+            circle_marker.header.frame_id = inputCloud->header.frame_id;
+            circle_marker.header.stamp = ros::Time::now();
+            circle_marker.ns = "circles";
+            circle_marker.action = visualization_msgs::Marker::ADD;
+            circle_marker.pose.orientation.w = 1.0;
+            circle_marker.id = i;
+            circle_marker.type = visualization_msgs::Marker::SPHERE;
+            circle_marker.scale.x = 0.1;
+            circle_marker.scale.y = 0.1;
+            circle_marker.scale.z = 0.1;
+            circle_marker.color.r = 0.0;
+            circle_marker.color.g = 1.0;
+            circle_marker.color.b = 0.0;
+            circle_marker.color.a = 1.0;
+            circle_marker.pose.position.x = localCloud[i].x;
+            circle_marker.pose.position.y = localCloud[i].y;
+            circle_marker.pose.position.z = 0;
 
-int main(int a, char** aa)
+            marker_array.markers.push_back(circle_marker);
+    }
+
+    marker_pub.publish(marker_array);
+    filtered_cloud_pub.publish(localCloud);
+}
+
+void node_handle(ros::NodeHandle& nh)
 {
-    ros::init(a, aa, "filter");
-    ros::NodeHandle n;
-    ros::Subscriber cloud=n.subscribe("cloud",10,detectCones);
-    ros::Publisher filtered_cloud_pub=n.advertise<pcl::PointCloud<pcl::PointXYZ>>("filtered_cloud",10);
-     /*sensor_msgs::PointCloud2 temp;
-        pcl::toROSMsg(outputCloud,temp);
-        temp.header.frame_id = "filter";*/
+    cloud_sub = nh.subscribe("cloud", 1, detectCones);
+    marker_pub = nh.advertise<visualization_msgs::MarkerArray>("circle_markers", 1);
+    filtered_cloud_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("filtered_cloud", 1);
+}
 
-        // publish point cloud
-        filtered_cloud_pub.publish(outputCloud);
-    
-
+int main(int argc, char** argv)
+{
+    ros::init(argc, argv, "map");
+    ros::NodeHandle nh;
+    node_handle(nh);
     ros::spin();
+    return 0;
 }

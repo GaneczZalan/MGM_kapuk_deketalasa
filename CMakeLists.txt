@@ -139,7 +139,6 @@ include_directories(
 add_executable(test_scan_hazi src/scan_node.cpp)
 add_executable(test_control_hazi src/control_node.cpp)
 add_executable(test_filter_node src/filter_node.cpp)
-add_executable(test_cone_detect src/cone_detect.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -161,10 +160,6 @@ add_executable(test_cone_detect src/cone_detect.cpp)
  ${PCL_LIBRARIES}
 )
 target_link_libraries(test_filter_node 
-${catkin_LIBRARIES}
-${PCL_LIBRARIES}
-)
-target_link_libraries(test_cone_detect 
 ${catkin_LIBRARIES}
 ${PCL_LIBRARIES}
 )
